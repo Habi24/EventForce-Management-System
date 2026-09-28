@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventForce | Event & Workforce Management System</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- QRCode.js CDN for dynamic ticket pass generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <!-- Chart.js CDN for Admin Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Announcement Bar (Role Persona Switcher) -->
+  <div class="bg-slate-900 text-white text-xs py-2.5 px-4 border-b border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-300 font-medium">EventForce — Intelligent Event Operations & Live Workforce Management</span>
+      </div>
+
+      <!-- Quick Demo Persona Switcher -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-slate-400 text-2xs uppercase font-bold tracking-wider">Role Preview:</span>
+        <button onclick="quickSwitchDemo('admin')" class="px-2.5 py-1 bg-purple-900/60 hover:bg-purple-800 border border-purple-500/40 rounded text-purple-200 font-semibold transition-all">
+          👑 Event Director / Admin
+        </button>
+        <button onclick="quickSwitchDemo('staff')" class="px-2.5 py-1 bg-amber-900/60 hover:bg-amber-800 border border-amber-500/40 rounded text-amber-200 font-semibold transition-all">
+          👷 Crew Staff
+        </button>
+        <button onclick="quickSwitchDemo('attendee')" class="px-2.5 py-1 bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/40 rounded text-emerald-200 font-semibold transition-all">
+          🎓 Attendee (Sree)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <header class="glass-header sticky top-0 z-40 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('events')">
+        <div class="w-11 h-11 bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <i class="fas fa-bolt text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-black tracking-tight text-slate-900">Event<span class="text-indigo-600">Force</span></span>
+            <span class="text-2xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded">v2.5</span>
+          </div>
+          <p class="text-2xs text-slate-400 font-medium">Workforce & Operations Management</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1 lg:space-x-4">
+        <button id="navEvents" onclick="switchTab('events')" class="px-3 py-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-colors flex items-center gap-1.5">
+          <i class="fas fa-calendar-alt text-xs"></i>
+          <span>Events Showcase</span>
+        </button>
+        <button id="navMyTickets" onclick="switchTab('my-tickets')" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+          <i class="fas fa-ticket-alt text-xs"></i>
+          <span>My Tickets</span>
+        </button>
+        <button id="navWorkforce" onclick="switchTab('workforce')" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+          <i class="fas fa-users-cog text-xs"></i>
+          <span>Workforce Crew</span>
+        </button>
+        <button id="navAdmin" onclick="switchTab('admin')" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+          <i class="fas fa-chart-line text-xs"></i>
+          <span>Organizer Admin</span>
+        </button>
+      </nav>
+
+      <!-- Auth Action Section -->
+      <div id="userSection" class="flex items-center space-x-3">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-grow">
+    
+    <!-- ========================================== -->
+    <!-- VIEW 1: EVENTS SHOWCASE (Landing & Catalog) -->
+    <!-- ========================================== -->
+    <section id="viewEvents">
+      <!-- Hero Section with Rich Visuals -->
+      <div class="hero-gradient py-12 md:py-20 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold mb-5 shadow-sm">
+            <i class="fas fa-sparkles text-amber-500"></i>
+            <span>All-In-One Event Operations & Workforce Dispatch Platform</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight">
+            Orchestrate Grand Events & <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Mobilize Crew Teams</span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mt-4 leading-relaxed">
+            From keynote conferences and multi-day hackathons to massive sports championships — seamlessly manage attendee registrations, dynamic QR admission passes, and real-time crew shift tracking.
+          </p>
+
+          <!-- Search & Filter Controls -->
+          <div class="mt-8 max-w-2xl mx-auto">
+            <div class="relative flex items-center bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:border-transparent transition-all p-1.5">
+              <i class="fas fa-search ml-3 text-slate-400 text-sm"></i>
+              <input type="text" id="eventSearchInput" 
+                     placeholder="Search events by title, keyword, category, or venue..."
+                     class="w-full pl-3 pr-3 py-2 text-sm bg-transparent focus:outline-none text-slate-800 placeholder-slate-400">
+              <button onclick="loadEvents()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-indigo-200 transition-all flex items-center gap-1.5 flex-shrink-0">
+                <span>Search</span>
+                <i class="fas fa-arrow-right text-2xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-6">
+            <button onclick="filterCategory('All')" data-category="All" class="cat-pill px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-sm shadow-indigo-200 transition-all">
+              All Events
+            </button>
+            <button onclick="filterCategory('Conference')" data-category="Conference" class="cat-pill px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+              🎙️ Conference
+            </button>
+            <button onclick="filterCategory('Technical')" data-category="Technical" class="cat-pill px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+              💻 Technical & Hackathons
+            </button>
+            <button onclick="filterCategory('Cultural')" data-category="Cultural" class="cat-pill px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+              🎭 Arts & Concerts
+            </button>
+            <button onclick="filterCategory('Sports')" data-category="Sports" class="cat-pill px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+              🏆 Esports & Gaming
+            </button>
+            <button onclick="filterCategory('Workshop')" data-category="Workshop" class="cat-pill px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+              🛠️ Tech Masterclasses
+            </button>
+          </div>
+
+          <!-- Live KPI Badges -->
+          <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            <div class="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm text-center flex flex-col justify-center h-24">
+              <span class="text-2xl font-black text-indigo-600">9+</span>
+              <p class="text-2xs font-bold text-slate-500 uppercase tracking-wider mt-1">Active Summits</p>
+            </div>
+            <div class="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm text-center flex flex-col justify-center h-24">
+              <span class="text-2xl font-black text-slate-900">2,500+</span>
+              <p class="text-2xs font-bold text-slate-500 uppercase tracking-wider mt-1">Tickets Issued</p>
+            </div>
+            <div class="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm text-center flex flex-col justify-center h-24">
+              <span class="text-2xl font-black text-emerald-600">100%</span>
+              <p class="text-2xs font-bold text-slate-500 uppercase tracking-wider mt-1">Shift Coverage</p>
+            </div>
+            <div class="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm text-center flex flex-col justify-center h-24">
+              <span class="text-2xl font-black text-purple-600">&lt; 2s</span>
+              <p class="text-2xs font-bold text-slate-500 uppercase tracking-wider mt-1">Gate QR Check-In</p>
+            </div>
+          </div>
+
+          <!-- Hero Event Visual Gallery (High-Res Photography Showcase) -->
+          <div class="mt-10 max-w-5xl mx-auto">
+            <div class="flex items-center justify-between mb-3 text-left">
+              <div>
+                <span class="text-2xs font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
+                  Featured Summits Spotlight
+                </span>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Click any showcase card below for complete speaker agendas and instant pass booking</p>
+              </div>
+              <span class="hidden sm:inline-flex items-center gap-1 text-2xs font-bold text-slate-400">
+                <i class="fas fa-images text-indigo-500"></i> HD Event Gallery
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Showcase Item 1: Conference -->
+              <div onclick="openEventDetailsModal('evt-101')" class="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer h-48 sm:h-56 border border-slate-200">
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80" 
+                     alt="AI Keynote Conference" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                     onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80'">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase bg-purple-600 text-white tracking-wider shadow-sm">Conference</span>
+                </div>
+                <div class="absolute top-2.5 right-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-black bg-slate-900/80 text-white backdrop-blur-sm">$199</span>
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 text-left">
+                  <p class="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">Global AI & Cloud Summit 2026</p>
+                  <p class="text-slate-300 text-2xs mt-1 flex items-center gap-1 truncate"><i class="fas fa-map-marker-alt text-indigo-400"></i> Convention Hall</p>
+                </div>
+              </div>
+
+              <!-- Showcase Item 2: Technical -->
+              <div onclick="openEventDetailsModal('evt-102')" class="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer h-48 sm:h-56 border border-slate-200">
+                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80" 
+                     alt="Autonomous Hackathon" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                     onerror="this.src='https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80'">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase bg-blue-600 text-white tracking-wider shadow-sm">Technical</span>
+                </div>
+                <div class="absolute top-2.5 right-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-black bg-emerald-600 text-white shadow-sm">FREE</span>
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 text-left">
+                  <p class="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">NextGen Autonomous Hackathon</p>
+                  <p class="text-slate-300 text-2xs mt-1 flex items-center gap-1 truncate"><i class="fas fa-map-marker-alt text-indigo-400"></i> Silicon Arena</p>
+                </div>
+              </div>
+
+              <!-- Showcase Item 3: Cultural -->
+              <div onclick="openEventDetailsModal('evt-103')" class="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer h-48 sm:h-56 border border-slate-200">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80" 
+                     alt="Aurora Music Festival" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                     onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80'">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase bg-pink-600 text-white tracking-wider shadow-sm">Cultural</span>
+                </div>
+                <div class="absolute top-2.5 right-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-black bg-slate-900/80 text-white backdrop-blur-sm">$75</span>
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 text-left">
+                  <p class="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">Aurora Music & Arts Festival</p>
+                  <p class="text-slate-300 text-2xs mt-1 flex items-center gap-1 truncate"><i class="fas fa-map-marker-alt text-indigo-400"></i> Amphitheatre</p>
+                </div>
+              </div>
+
+              <!-- Showcase Item 4: Sports -->
+              <div onclick="openEventDetailsModal('evt-104')" class="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer h-48 sm:h-56 border border-slate-200">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80" 
+                     alt="Apex Esports Arena" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                     onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80'">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase bg-emerald-600 text-white tracking-wider shadow-sm">Sports</span>
+                </div>
+                <div class="absolute top-2.5 right-2.5">
+                  <span class="px-2 py-0.5 rounded-full text-2xs font-black bg-slate-900/80 text-white backdrop-blur-sm">$50</span>
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 text-left">
+                  <p class="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">Apex Esports & Sim Championship</p>
+                  <p class="text-slate-300 text-2xs mt-1 flex items-center gap-1 truncate"><i class="fas fa-map-marker-alt text-indigo-400"></i> Apex Coliseum</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Events Catalog Grid Section -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Featured Events Portfolio</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Explore upcoming conferences, summits, and workshops with instant pass reservation</p>
+          </div>
+          <span id="eventsCountBadge" class="px-3.5 py-1.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">
+            Loading...
+          </span>
+        </div>
+
+        <div id="eventsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Featured Keynote Speakers Showcase -->
+      <div class="bg-white border-y border-slate-200 py-14">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-10">
+            <span class="text-2xs font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+              Industry Luminaries
+            </span>
+            <h3 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Distinguished Keynote Speakers</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Leading visionaries and principal engineers presenting at EventForce summits</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Speaker 1 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 text-center hover:shadow-lg transition-all flex flex-col items-center justify-between h-full group">
+              <div class="flex flex-col items-center w-full">
+                <div class="relative mb-4">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
+                       class="w-20 h-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-md group-hover:scale-105 transition-transform" 
+                       alt="Dr. Arthur Pendelton"
+                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';">
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 leading-snug">Dr. Arthur Pendelton</h4>
+                <p class="text-2xs font-bold text-indigo-600 mt-1">VP of AI Research</p>
+                <p class="text-2xs text-slate-400 mt-0.5">Nexus Cognitive Labs</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 w-full">
+                <span class="inline-block px-3 py-1 rounded-full text-2xs bg-indigo-50 text-indigo-700 font-bold border border-indigo-100/60">Autonomous Agents</span>
+              </div>
+            </div>
+
+            <!-- Speaker 2 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 text-center hover:shadow-lg transition-all flex flex-col items-center justify-between h-full group">
+              <div class="flex flex-col items-center w-full">
+                <div class="relative mb-4">
+                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80" 
+                       class="w-20 h-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-md group-hover:scale-105 transition-transform" 
+                       alt="Maya Lin"
+                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80';">
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 leading-snug">Maya Lin</h4>
+                <p class="text-2xs font-bold text-indigo-600 mt-1">Chief Cloud Architect</p>
+                <p class="text-2xs text-slate-400 mt-0.5">CloudSphere Global</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 w-full">
+                <span class="inline-block px-3 py-1 rounded-full text-2xs bg-indigo-50 text-indigo-700 font-bold border border-indigo-100/60">Edge Computing</span>
+              </div>
+            </div>
+
+            <!-- Speaker 3 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 text-center hover:shadow-lg transition-all flex flex-col items-center justify-between h-full group">
+              <div class="flex flex-col items-center w-full">
+                <div class="relative mb-4">
+                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" 
+                       class="w-20 h-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-md group-hover:scale-105 transition-transform" 
+                       alt="Zachary Taylor"
+                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80';">
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 leading-snug">Zachary Taylor</h4>
+                <p class="text-2xs font-bold text-indigo-600 mt-1">Head of Developer Ecosystem</p>
+                <p class="text-2xs text-slate-400 mt-0.5">CodeFlow Systems</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 w-full">
+                <span class="inline-block px-3 py-1 rounded-full text-2xs bg-indigo-50 text-indigo-700 font-bold border border-indigo-100/60">Open Innovation</span>
+              </div>
+            </div>
+
+            <!-- Speaker 4 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 text-center hover:shadow-lg transition-all flex flex-col items-center justify-between h-full group">
+              <div class="flex flex-col items-center w-full">
+                <div class="relative mb-4">
+                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80" 
+                       class="w-20 h-20 rounded-full object-cover ring-4 ring-indigo-50 shadow-md group-hover:scale-105 transition-transform" 
+                       alt="Sarah Jenkins"
+                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80';">
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 leading-snug">Sarah Jenkins</h4>
+                <p class="text-2xs font-bold text-indigo-600 mt-1">Staff Infrastructure Engineer</p>
+                <p class="text-2xs text-slate-400 mt-0.5">ScaleMesh Networks</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-slate-100 w-full">
+                <span class="inline-block px-3 py-1 rounded-full text-2xs bg-indigo-50 text-indigo-700 font-bold border border-indigo-100/60">Microservices Mesh</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Enterprise Sponsors & Ecosystem Partners -->
+      <div class="py-12 bg-slate-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <p class="text-2xs font-bold uppercase tracking-widest text-slate-400 mb-6">
+            Supported by Global Technology Leaders & Infrastructure Partners
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-5">
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-google text-indigo-600 text-sm"></i>
+              <span>Google Cloud</span>
+            </div>
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-salesforce text-sky-500 text-sm"></i>
+              <span>Salesforce</span>
+            </div>
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-microsoft text-blue-500 text-sm"></i>
+              <span>Microsoft Azure</span>
+            </div>
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-aws text-amber-500 text-sm"></i>
+              <span>Amazon Web Services</span>
+            </div>
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-github text-slate-900 text-sm"></i>
+              <span>GitHub</span>
+            </div>
+            <div class="px-5 py-2.5 bg-white rounded-xl border border-slate-200 shadow-xs flex items-center gap-2.5 text-xs font-bold text-slate-700 hover:border-slate-300 hover:shadow-sm transition-all">
+              <i class="fab fa-docker text-blue-500 text-sm"></i>
+              <span>Docker</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: MY TICKETS & DIGITAL PASSES        -->
+    <!-- ========================================== -->
+    <section id="viewMyTickets" class="hidden">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+        <div class="flex items-center justify-between pb-6 border-b border-slate-200 mb-6">
+          <div>
+            <h2 class="text-2xl font-black text-slate-900">My Confirmed Passes</h2>
+            <p class="text-xs text-slate-500 mt-1">Digital admission tickets generated with real-time entry QR code</p>
+          </div>
+          <button onclick="switchTab('events')" class="px-4 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all">
+            + Book Another Event
+          </button>
+        </div>
+
+        <div id="myTicketsList" class="space-y-4">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: WORKFORCE CREW PORTAL              -->
+    <!-- ========================================== -->
+    <section id="viewWorkforce" class="hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-200 mb-8 gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-2">
+              <i class="fas fa-id-badge"></i>
+              <span>Crew Operations & Duty Roster</span>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900">Workforce Command Center</h2>
+            <p class="text-xs text-slate-500 mt-1">Live shift allocation, responsibilities, and front-desk ticket verification</p>
+          </div>
+
+          <!-- Quick stats pills -->
+          <div class="flex items-center gap-3">
+            <div class="p-3 bg-white border border-slate-200 rounded-xl text-center shadow-sm">
+              <span class="text-2xs text-slate-400 font-bold block uppercase">Total Shifts</span>
+              <span id="wfTotalTasks" class="text-lg font-black text-slate-800">0</span>
+            </div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl text-center shadow-sm">
+              <span class="text-2xs text-amber-600 font-bold block uppercase">In Progress</span>
+              <span id="wfActiveTasks" class="text-lg font-black text-amber-600">0</span>
+            </div>
+            <div class="p-3 bg-white border border-slate-200 rounded-xl text-center shadow-sm">
+              <span class="text-2xs text-emerald-600 font-bold block uppercase">Completed</span>
+              <span id="wfCompletedTasks" class="text-lg font-black text-emerald-600">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Column Layout: Left Tasks, Right Check-in Desk & Crew Directory -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Left Column (2 Cols wide): Assigned Duties -->
+          <div class="lg:col-span-2 space-y-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-tasks text-indigo-600"></i>
+                <span>Active Shift Tasks</span>
+              </h3>
+              <span class="text-xs text-slate-500">Update status as you execute duties</span>
+            </div>
+
+            <div id="workforceTasksList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Right Column (1 Col wide): Check-in Desk & Staff Directory -->
+          <div class="space-y-6">
+            
+            <!-- Real-Time Entry Check-In Desk Tool -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+              <div class="flex items-center gap-2.5 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm shadow-sm">
+                  <i class="fas fa-qrcode"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900">Entry Desk Scanner</h4>
+                  <p class="text-2xs text-slate-400">Validate attendee ticket at gate</p>
+                </div>
+              </div>
+
+              <form id="checkInForm" class="space-y-3">
+                <div>
+                  <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Ticket ID or QR Code String</label>
+                  <input type="text" id="checkInTicketInput" 
+                         placeholder="e.g. EF-2026-T8941" 
+                         class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-sm shadow-indigo-200">
+                  <i class="fas fa-check-double mr-1.5"></i> Verify & Check-In
+                </button>
+              </form>
+
+              <!-- Result Message Box -->
+              <div id="checkInResultBox" class="hidden"></div>
+            </div>
+
+            <!-- Active Crew Staff Roster -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+              <h4 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <i class="fas fa-users text-slate-400"></i>
+                <span>Crew Staff Directory</span>
+              </h4>
+              <p class="text-2xs text-slate-400 mb-4">On-ground team members & contact</p>
+              
+              <div id="crewDirectoryList" class="space-y-3">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: ORGANIZER ADMIN DASHBOARD          -->
+    <!-- ========================================== -->
+    <section id="viewAdmin" class="hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- Admin Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-200 mb-8 gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-bold mb-2">
+              <i class="fas fa-shield-alt"></i>
+              <span>Event Director Console</span>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900">Organizer Analytics & Management</h2>
+            <p class="text-xs text-slate-500 mt-1">Full operational oversight, event authoring, staff scheduling, and reporting</p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="api.downloadAttendeesCSV()" class="px-4 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+              <i class="fas fa-file-download text-indigo-600"></i>
+              <span>Export CSV</span>
+            </button>
+            <button onclick="openModal('assignTaskModal')" class="px-4 py-2.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all flex items-center gap-1.5">
+              <i class="fas fa-user-plus"></i>
+              <span>Assign Crew Shift</span>
+            </button>
+            <button onclick="openModal('createEventModal')" class="px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all flex items-center gap-1.5">
+              <i class="fas fa-plus"></i>
+              <span>Create New Event</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Total Events</span>
+              <h3 id="admTotalEvents" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Total Bookings</span>
+              <h3 id="admTotalRegs" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Gate Check-Ins</span>
+              <h3 id="admCheckedIn" class="text-2xl font-black text-emerald-600 mt-1">0 (0%)</h3>
+            </div>
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+              <i class="fas fa-user-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-400">Active Crew Staff</span>
+              <h3 id="admTotalStaff" class="text-2xl font-black text-purple-600 mt-1">0</h3>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-lg">
+              <i class="fas fa-user-shield"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h4 class="text-sm font-bold text-slate-800 mb-1">Event Category Distribution</h4>
+            <p class="text-2xs text-slate-400 mb-4">Breakdown by Conference, Technical, Cultural, and Sports</p>
+            <div class="h-64 relative">
+              <canvas id="chartCategories"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h4 class="text-sm font-bold text-slate-800 mb-1">Workforce Shift Progression</h4>
+            <p class="text-2xs text-slate-400 mb-4">Live status of operational shift responsibilities</p>
+            <div class="h-64 relative">
+              <canvas id="chartWorkforce"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events Catalog Management Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h4 class="text-base font-bold text-slate-800">Event Portfolio Directory</h4>
+              <p class="text-xs text-slate-500">Live managed events</p>
+            </div>
+            <button onclick="openModal('createEventModal')" class="px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all">
+              + New Event
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-2xs uppercase tracking-wider text-slate-400 font-extrabold border-b border-slate-200">
+                  <th class="py-3 px-4">Event & Venue</th>
+                  <th class="py-3 px-4">Category</th>
+                  <th class="py-3 px-4">Date</th>
+                  <th class="py-3 px-4">Occupancy</th>
+                  <th class="py-3 px-4">Fee</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminEventsTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Attendee Registrations & Gate Verification Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h4 class="text-base font-bold text-slate-800">Attendee Ticket Audit & Gate Entry</h4>
+              <p class="text-xs text-slate-500">Live attendee roster with instant check-in verification</p>
+            </div>
+            <button onclick="api.downloadAttendeesCSV()" class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors">
+              <i class="fas fa-download mr-1"></i> Download CSV
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-2xs uppercase tracking-wider text-slate-400 font-extrabold border-b border-slate-200">
+                  <th class="py-3 px-4">Ticket ID</th>
+                  <th class="py-3 px-4">Attendee Name & Email</th>
+                  <th class="py-3 px-4">Event</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4">Registered</th>
+                  <th class="py-3 px-4 text-right">Gate Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminAttendeesTableBody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                      -->
+  <!-- ========================================== -->
+
+  <!-- 1. Event Details Modal -->
+  <div id="eventDetailsModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto" id="eventDetailsContent">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+
+  <!-- 2. Booking Modal -->
+  <div id="bookingModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <h3 class="text-lg font-bold text-slate-900">Event Admission Pass Reservation</h3>
+        <button onclick="closeModal('bookingModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="my-4 p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-xl text-xs space-y-1">
+        <p class="font-bold text-indigo-900 text-sm" id="bookingEventTitle"></p>
+        <p class="text-indigo-700" id="bookingEventDate"></p>
+        <p class="text-slate-500" id="bookingEventVenue"></p>
+        <p class="font-black text-indigo-600 pt-1" id="bookingEventPrice"></p>
+      </div>
+
+      <form id="bookingForm" class="space-y-4">
+        <input type="hidden" id="bookingEventId">
+        
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Attendee Full Name</label>
+          <input type="text" id="bookAttendeeName" required placeholder="e.g. Sree" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
+            <input type="email" id="bookAttendeeEmail" required placeholder="attendee@eventforce.com" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Phone Number</label>
+            <input type="tel" id="bookAttendeePhone" placeholder="+91 98765 43210" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Organization / Institution</label>
+          <input type="text" id="bookAttendeeCollege" placeholder="e.g. Chettinad College of Engineering and Technology" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('bookingModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all">
+            Confirm & Generate Pass
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Ticket Pass Modal (with QR Code) -->
+  <div id="ticketModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-xl rounded-2xl shadow-2xl p-6 relative">
+      <button onclick="closeModal('ticketModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 z-10">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+      <div id="ticketPassContainer">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Assign Crew Task Modal -->
+  <div id="assignTaskModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Assign Crew Duty Shift</h3>
+        <button onclick="closeModal('assignTaskModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="assignTaskForm" class="space-y-3 mt-4">
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Target Event</label>
+          <select id="assignEventSelect" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Staff Member</label>
+          <select id="assignStaffSelect" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Duty Title</label>
+          <input type="text" id="assignTaskTitle" required placeholder="e.g. Stage AV & Projector Operations" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Role / Department</label>
+            <input type="text" id="assignTaskRole" placeholder="Tech Lead / Logistics" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Priority</label>
+            <select id="assignPriority" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+              <option value="High">High</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Shift Start</label>
+            <input type="text" id="assignShiftStart" placeholder="08:00 AM" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Shift End</label>
+            <input type="text" id="assignShiftEnd" placeholder="02:00 PM" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Operational Instructions</label>
+          <textarea id="assignDescription" rows="2" placeholder="Specific duty responsibilities and reporting location..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('assignTaskModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-all">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all">Assign Shift</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Create Event Modal -->
+  <div id="createEventModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-xl rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Publish New Event</h3>
+        <button onclick="closeModal('createEventModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="createEventForm" class="space-y-3 mt-4">
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Event Title</label>
+          <input type="text" id="createEventTitle" required placeholder="e.g. AI & Robotics Hackathon 2026" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Category</label>
+            <select id="createEventCategory" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+              <option value="Conference">Conference</option>
+              <option value="Technical">Technical</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Sports">Sports</option>
+              <option value="Workshop">Workshop</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Date</label>
+            <input type="date" id="createEventDate" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Time Schedule</label>
+            <input type="text" id="createEventTime" placeholder="10:00 AM - 05:00 PM" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Total Capacity</label>
+            <input type="number" id="createEventCapacity" value="250" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Ticket Fee ($0 for Free)</label>
+            <input type="number" id="createEventPrice" value="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Venue / Auditorium</label>
+            <input type="text" id="createEventVenue" required placeholder="Convention Hall A, Silicon Valley" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Cover Image URL (HD Photo)</label>
+          <input type="url" id="createEventBanner" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Event Description & Schedule</label>
+          <textarea id="createEventDescription" rows="3" placeholder="Provide full conference agenda, track details..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('createEventModal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-all">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all">Publish Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Login Modal -->
+  <div id="loginModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Sign In to EventForce</h3>
+        <button onclick="closeModal('loginModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="loginForm" class="space-y-3 mt-4">
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
+          <input type="email" id="loginEmail" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Password</label>
+          <input type="password" id="loginPassword" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all">
+            Sign In
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 text-center">
+          <p class="text-2xs text-slate-500">Need an account? <a href="javascript:void(0)" onclick="closeModal('loginModal'); openRegisterModal();" class="text-indigo-600 font-bold">Register here</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. Register Modal -->
+  <div id="registerModal" class="modal-overlay fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Create New Account</h3>
+        <button onclick="closeModal('registerModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="registerForm" class="space-y-3 mt-4">
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Full Name</label>
+          <input type="text" id="regName" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Email</label>
+          <input type="email" id="regEmail" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Password</label>
+          <input type="password" id="regPassword" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Role</label>
+          <select id="regRole" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+            <option value="attendee">Attendee / Delegate</option>
+            <option value="staff">Event Crew / Staff</option>
+            <option value="admin">Event Organizer / Admin</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Phone Number</label>
+          <input type="tel" id="regPhone" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">Organization / Department</label>
+          <input type="text" id="regDept" placeholder="e.g. Technology & Engineering" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 transition-all">
+            Register Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-10 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-extrabold text-slate-800 text-sm">EventForce</span>
+        <span>•</span>
+        <span>Intelligent Event & Workforce Management Platform</span>
+      </div>
+      <div>
+        <span>Built with Node.js, Express REST API, Tailwind CSS & Dynamic QR Pass Verification</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
